@@ -2,15 +2,18 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { ApplicationService } from '../services/application.service';
 
-export const getApplications = async (req: Request, res: Response): Promise<any> => {
+export const getApplications = async (req: AuthRequest, res: Response): Promise<any> => {
   try {
     const { page, limit, jobId, status } = req.query;
     
+    const userIdFilter = req.user?.role === 'ADMIN' ? undefined : req.user?.id;
+
     const result = await ApplicationService.findApplications({
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       jobId: jobId ? Number(jobId) : undefined,
-      status: status as string
+      status: status as string,
+      userId: userIdFilter,
     });
 
     res.status(200).json(result);
@@ -23,6 +26,11 @@ export const updateApplicationStatus = async (req: Request, res: Response): Prom
   try {
     const { id } = req.params;
     const { status } = req.body;
+
+    const allowedStatuses = ['PENDING', 'REVIEWED', 'REJECTED'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
 
     const application = await ApplicationService.updateApplicationStatus(Number(id), status);
 

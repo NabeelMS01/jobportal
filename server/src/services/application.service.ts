@@ -3,16 +3,17 @@ import { Application } from '@prisma/client';
 import { CacheService } from './cache.service';
 
 export class ApplicationService {
-  static async findApplications(query: { page?: number | undefined; limit?: number | undefined; jobId?: number | undefined; status?: string | undefined }) {
-    const { page = 1, limit = 10, jobId, status } = query;
+  static async findApplications(query: { page?: number | undefined; limit?: number | undefined; jobId?: number | undefined; status?: string | undefined; userId?: number | undefined }) {
+    const { page = 1, limit = 10, jobId, status, userId } = query;
     
     const where: any = {};
     if (jobId) where.jobId = Number(jobId);
     if (status) where.status = status;
+    if (userId) where.userId = Number(userId);
 
     const skip = (Number(page) - 1) * Number(limit);
     
-    const cacheKey = `applications:${page}:${limit}:${jobId || 'all'}:${status || 'all'}`;
+    const cacheKey = `applications:${page}:${limit}:${jobId || 'all'}:${status || 'all'}:${userId || 'all'}`;
     const cachedData = await CacheService.get<any>(cacheKey);
     if (cachedData) {
       return cachedData;

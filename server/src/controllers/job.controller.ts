@@ -31,7 +31,10 @@ export const getJobById = async (req: Request, res: Response): Promise<any> => {
 
 export const createJob = async (req: Request, res: Response): Promise<any> => {
   try {
-    const job = await JobService.createJob(req.body);
+    const { title, description, category, experienceLevel, location, salary, company, isActive } = req.body;
+    const job = await JobService.createJob({
+      title, description, category, experienceLevel, location, salary, company, isActive
+    });
     res.status(201).json(job);
   } catch (error) {
     res.status(500).json({ message: 'Error creating job' });
@@ -41,7 +44,10 @@ export const createJob = async (req: Request, res: Response): Promise<any> => {
 export const updateJob = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const job = await JobService.updateJob(Number(id), req.body);
+    const { title, description, category, experienceLevel, location, salary, company, isActive } = req.body;
+    const job = await JobService.updateJob(Number(id), {
+      title, description, category, experienceLevel, location, salary, company, isActive
+    });
     res.status(200).json(job);
   } catch (error) {
     res.status(500).json({ message: 'Error updating job' });

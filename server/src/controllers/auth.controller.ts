@@ -7,7 +7,8 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     res.status(201).json({ message: 'User created successfully' });
   } catch (error: any) {
     if (error.message === 'User already exists') {
-      return res.status(400).json({ message: error.message });
+      // Prevent user enumeration by returning a generic error
+      return res.status(400).json({ message: 'Invalid credentials or user already exists' });
     }
     res.status(500).json({ message: 'Something went wrong' });
   }
@@ -17,22 +18,23 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   try {
     const { user, token, refreshToken } = await AuthService.login(req.body);
     
-    res.cookie('accessToken', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    res.cookie('accessToken', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
     
     res.status(200).json({ user, token });
   } catch (error: any) {
-    if (error.message === 'User not found') {
-      return res.status(404).json({ message: error.message });
-    }
-    if (error.message === 'Invalid credentials') {
-      return res.status(400).json({ message: error.message });
+    if (error.message === 'User not found' || error.message === 'Invalid credentials') {
+      // Generic error message for both conditions
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
 
-export const logout = (req: Request, res: Response): any => {
+export const logout = async (req: any, res: Response): Promise<any> => {
+  if (req.user) {
+    await AuthService.logout(req.user.id);
+  }
   res.clearCookie('accessToken');
   res.clearCookie('refreshToken');
   res.status(200).json({ message: 'Logged out successfully' });
@@ -55,7 +57,7 @@ export const refresh = async (req: Request, res: Response): Promise<any> => {
 
     try {
       const newAccessToken = await AuthService.refresh(refreshTokenCookie);
-      res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      res.cookie('accessToken', newAccessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
       res.status(200).json({ token: newAccessToken });
     } catch (serviceError: any) {
       if (serviceError.message === 'User no longer exists') {

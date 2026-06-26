@@ -42,6 +42,12 @@ export class AuthService {
       { expiresIn: '7d' }
     );
     
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { hashedRefreshToken }
+    });
+    
     return {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       token,
@@ -53,8 +59,13 @@ export class AuthService {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET as string) as any;
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
-    if (!user) {
-      throw new Error('User no longer exists');
+    if (!user || !user.hashedRefreshToken) {
+      throw new Error('User no longer exists or session revoked');
+    }
+
+    const isValid = await bcrypt.compare(token, user.hashedRefreshToken);
+    if (!isValid) {
+      throw new Error('Invalid refresh token');
     }
 
     const newAccessToken = jwt.sign(
@@ -64,5 +75,12 @@ export class AuthService {
     );
 
     return newAccessToken;
+  }
+
+  static async logout(userId: number) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken: null }
+    });
   }
 }
