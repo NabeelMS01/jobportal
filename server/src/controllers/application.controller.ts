@@ -27,7 +27,7 @@ export const updateApplicationStatus = async (req: Request, res: Response): Prom
     const { id } = req.params;
     const { status } = req.body;
 
-    const allowedStatuses = ['PENDING', 'REVIEWED', 'REJECTED'];
+    const allowedStatuses = ['PENDING', 'REVIEWED', 'APPROVED', 'REJECTED'];
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }

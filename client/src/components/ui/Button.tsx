@@ -1,34 +1,35 @@
-import type { ButtonHTMLAttributes } from 'react';
+import React from "react";
+import { cn } from "@/lib/utils";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "sm" | "md";
 }
 
-const Button = ({ variant = 'primary', size = 'md', className = '', children, ...props }: ButtonProps) => {
-  const baseClasses = 'inline-flex items-center justify-center border font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+export default function Button({
+  children,
+  variant = "primary",
+  size = "md",
+  className,
+  ...rest
+}: ButtonProps) {
+  const base = "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
   
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base'
+  const sizes = {
+    sm: "h-9 px-3 text-sm",
+    md: "h-11 px-5 text-sm"
   };
-
-  const variantClasses = {
-    primary: 'border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 shadow-sm',
-    secondary: 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500 shadow-sm',
-    danger: 'border-transparent text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-sm',
-    ghost: 'border-transparent text-gray-600 bg-transparent hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500'
+  
+  const variants = {
+    primary: "text-primary-foreground shadow-elegant hover:shadow-[0_14px_50px_-10px_color-mix(in_oklab,var(--primary)_40%,transparent)] hover:-translate-y-0.5 [background:var(--gradient-primary)]",
+    secondary: "bg-card text-foreground border border-border hover:bg-muted",
+    ghost: "text-muted-foreground hover:text-foreground hover:bg-muted",
+    danger: "bg-destructive text-destructive-foreground hover:opacity-90",
   };
-
+  
   return (
-    <button
-      className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
-      {...props}
-    >
+    <button className={cn(base, sizes[size], variants[variant], className)} {...rest}>
       {children}
     </button>
   );
-};
-
-export default Button;
+}

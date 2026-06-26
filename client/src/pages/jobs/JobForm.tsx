@@ -9,6 +9,9 @@ import * as z from 'zod';
 import { ArrowLeft } from 'lucide-react';
 import api from '@/services/api';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import { cn } from '@/lib/utils';
 
 const jobSchema = z.object({
   title: z.string().min(3, 'Title is required and must be at least 3 characters'),
@@ -22,6 +25,16 @@ const jobSchema = z.object({
 
 type JobFormData = z.infer<typeof jobSchema>;
 
+function Field({ label, children, full, error }: { label: string; children: React.ReactNode; full?: boolean; error?: string }) {
+  return (
+    <div className={cn(full && "md:col-span-2")}>
+      <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs font-medium text-[var(--destructive)]">{error}</p>}
+    </div>
+  );
+}
+
 const JobForm = () => {
   const { id } = useParams();
   const dispatch = useDispatch<AppDispatch>();
@@ -34,7 +47,6 @@ const JobForm = () => {
 
   useEffect(() => {
     if (isEditing) {
-      // Fetch single job if editing
       api.get(`/api/jobs/${id}`).then((res) => {
         reset(res.data);
       }).catch((err) => {
@@ -58,120 +70,64 @@ const JobForm = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6 flex items-center">
-        <button
-          onClick={() => navigate('/')}
-          className="text-gray-500 hover:text-gray-700 flex items-center text-sm font-medium"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to Jobs
+    <div className="space-y-6 max-w-4xl animate-fade-in mx-auto">
+      <div>
+        <button onClick={() => navigate('/')} className="text-sm font-semibold text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 mb-3">
+          <ArrowLeft className="h-4 w-4" /> Back to Jobs
         </button>
+        <h2 className="text-2xl font-extrabold tracking-tight">{isEditing ? "Edit Job Posting" : "Create New Job Posting"}</h2>
+        <p className="text-sm text-muted-foreground mt-1">Fill in the details below to publish the role.</p>
       </div>
 
-      <div className="bg-white shadow rounded-lg border border-gray-200 p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          {isEditing ? 'Edit Job Posting' : 'Create New Job Posting'}
-        </h2>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Job Title</label>
-              <input
-                {...register('title')}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Company Name</label>
-              <input
-                {...register('company')}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              {errors.company && <p className="mt-1 text-sm text-red-600">{errors.company.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
-              <select
-                {...register('category')}
-                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="">Select Category</option>
-                <option value="Engineering">Engineering</option>
-                <option value="Design">Design</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Sales">Sales</option>
-              </select>
-              {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Experience Level</label>
-              <select
-                {...register('experienceLevel')}
-                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="">Select Level</option>
-                <option value="Junior">Junior</option>
-                <option value="Mid">Mid-Level</option>
-                <option value="Senior">Senior</option>
-                <option value="Lead">Lead</option>
-              </select>
-              {errors.experienceLevel && <p className="mt-1 text-sm text-red-600">{errors.experienceLevel.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Location</label>
-              <input
-                {...register('location')}
-                placeholder="e.g. Remote, Bangalore..."
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Salary (Optional)</label>
-              <input
-                {...register('salary')}
-                placeholder="e.g. $80k - $100k"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700">Job Description</label>
-              <textarea
-                {...register('description')}
-                rows={4}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
-            </div>
-          </div>
-
-          <div className="pt-4 flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate('/')}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Job'}
-            </Button>
-          </div>
-        </form>
-      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-card border border-border rounded-2xl shadow-soft p-6 md:p-8 space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <Field label="Job Title" full error={errors.title?.message}>
+            <Input {...register('title')} placeholder="e.g. Senior Frontend Engineer" />
+          </Field>
+          
+          <Field label="Company Name" full error={errors.company?.message}>
+            <Input {...register('company')} placeholder="e.g. Linear Labs" />
+          </Field>
+          
+          <Field label="Category" error={errors.category?.message}>
+            <Select {...register('category')}>
+              <option value="">Select Category</option>
+              {["Engineering", "Design", "Marketing", "Sales"].map(c => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          </Field>
+          
+          <Field label="Experience Level" error={errors.experienceLevel?.message}>
+            <Select {...register('experienceLevel')}>
+              <option value="">Select Level</option>
+              {["Junior", "Mid", "Senior", "Lead"].map(c => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          </Field>
+          
+          <Field label="Location" error={errors.location?.message}>
+            <Input {...register('location')} placeholder="Remote · EU" />
+          </Field>
+          
+          <Field label="Salary (optional)" error={errors.salary?.message}>
+            <Input {...register('salary')} placeholder="$120k–$150k" />
+          </Field>
+          
+          <Field label="Job Description" full error={errors.description?.message}>
+            <textarea 
+              {...register('description')} 
+              rows={5}
+              placeholder="Describe the role, responsibilities, and ideal candidate..."
+              className="w-full px-4 py-3 rounded-xl bg-card border border-input text-sm outline-none transition-all focus:border-primary focus:ring-4 focus:ring-[color-mix(in_oklab,var(--primary)_15%,transparent)] resize-y" 
+            />
+          </Field>
+        </div>
+        
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+          <Button type="button" variant="secondary" onClick={() => navigate('/')}>Cancel</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Job'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

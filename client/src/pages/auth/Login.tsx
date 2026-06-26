@@ -2,84 +2,71 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/store/slices/authSlice';
 import type { AppDispatch, RootState } from '@/store/store';
-import { Briefcase } from 'lucide-react';
+import { Sparkles, Mail, Lock } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 const Login = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState('admin@tnp.com');
   const [password, setPassword] = useState('admin123');
+  const [localError, setLocalError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setLocalError("Please enter both email and password.");
+      return;
+    }
+    setLocalError("");
     dispatch(loginUser({ email, password }));
   };
 
+  const displayError = localError || error;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Briefcase className="w-8 h-8 text-white" />
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Portal Login
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Sign in to manage job listings
-        </p>
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden" style={{ background: "var(--gradient-mesh), var(--color-background)" }}>
+      <div className="absolute inset-0 -z-0 opacity-60">
+        <div className="absolute top-20 left-10 h-72 w-72 rounded-full blur-3xl" style={{ background: "color-mix(in oklab, var(--primary) 30%, transparent)" }} />
+        <div className="absolute bottom-10 right-10 h-96 w-96 rounded-full blur-3xl" style={{ background: "color-mix(in oklab, var(--primary-glow) 30%, transparent)" }} />
       </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-md">
-                {error}
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-          </form>
+      <div className="relative w-full max-w-md glass-panel rounded-3xl p-10 animate-fade-in">
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="h-14 w-14 rounded-2xl grid place-items-center shadow-elegant mb-4" style={{ background: "var(--gradient-primary)" }}>
+            <Sparkles className="h-7 w-7 text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Admin Portal Login</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to manage your job portal</p>
         </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Email address</label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" className="pl-10" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="pl-10" />
+            </div>
+          </div>
+          
+          {displayError && (
+            <div className="text-xs font-medium text-[var(--destructive)] bg-[color-mix(in_oklab,var(--destructive)_10%,transparent)] border border-[color-mix(in_oklab,var(--destructive)_25%,transparent)] rounded-lg px-3 py-2">
+              {displayError}
+            </div>
+          )}
+          
+          <Button type="submit" disabled={loading} className="w-full mt-2">
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Button>
+        </form>
+        <p className="text-xs text-center text-muted-foreground mt-6">Protected area · TNP Admin</p>
       </div>
     </div>
   );

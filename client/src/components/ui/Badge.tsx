@@ -1,25 +1,24 @@
-interface BadgeProps {
+import React from "react";
+import { cn } from "@/lib/utils";
+
+export interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'gray' | 'red' | 'yellow' | 'green' | 'blue' | 'indigo' | 'purple' | 'pink';
+  tone?: "neutral" | "primary" | "success" | "warning" | "info" | "danger";
 }
 
-const Badge = ({ children, variant = 'gray' }: BadgeProps) => {
-  const variantClasses = {
-    gray: 'bg-gray-100 text-gray-800',
-    red: 'bg-red-100 text-red-800',
-    yellow: 'bg-yellow-100 text-yellow-800',
-    green: 'bg-green-100 text-green-800',
-    blue: 'bg-blue-100 text-blue-800',
-    indigo: 'bg-indigo-100 text-indigo-800',
-    purple: 'bg-purple-100 text-purple-800',
-    pink: 'bg-pink-100 text-pink-800',
+export default function Badge({ children, tone = "neutral" }: BadgeProps) {
+  const tones = {
+    neutral: "bg-muted text-muted-foreground",
+    primary: "bg-accent text-accent-foreground",
+    success: "bg-[color-mix(in_oklab,var(--success)_15%,transparent)] text-[var(--success)]",
+    warning: "bg-[color-mix(in_oklab,var(--warning)_22%,transparent)] text-[oklch(0.4_0.12_80)]",
+    info: "bg-[color-mix(in_oklab,var(--info)_15%,transparent)] text-[var(--info)]",
+    danger: "bg-[color-mix(in_oklab,var(--destructive)_15%,transparent)] text-[var(--destructive)]",
   };
-
+  
   return (
-    <span className={`px-2.5 py-0.5 inline-flex items-center text-xs leading-5 font-semibold rounded-full ${variantClasses[variant]}`}>
+    <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold", tones[tone])}>
       {children}
     </span>
   );
-};
-
-export default Badge;
+}
