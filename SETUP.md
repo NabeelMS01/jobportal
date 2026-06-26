@@ -96,7 +96,14 @@ Open a **new terminal tab/window**.
    npm install
    ```
 
-3. **Start the Frontend Application**:
+3. **Environment Variables**:
+   Copy the example environment file for the frontend.
+   ```bash
+   cp .env.example .env
+   ```
+   *(This ensures the frontend can connect to your backend API correctly).*
+
+4. **Start the Frontend Application**:
    ```bash
    npm run dev
    ```
