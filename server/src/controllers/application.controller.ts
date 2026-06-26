@@ -1,49 +1,19 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
-import prisma from '../utils/db';
+import { ApplicationService } from '../services/application.service';
 
 export const getApplications = async (req: Request, res: Response): Promise<any> => {
   try {
-    const { page = 1, limit = 10, jobId, status } = req.query;
+    const { page, limit, jobId, status } = req.query;
     
-    const where: any = {};
-    if (jobId) where.jobId = Number(jobId);
-    if (status) where.status = status as string;
-
-    const skip = (Number(page) - 1) * Number(limit);
-    
-    const [applications, total] = await Promise.all([
-      prisma.application.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            }
-          },
-          job: {
-            select: {
-              id: true,
-              title: true,
-              company: true,
-            }
-          }
-        }
-      }),
-      prisma.application.count({ where })
-    ]);
-
-    res.status(200).json({
-      applications,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit))
+    const result = await ApplicationService.findApplications({
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      jobId: jobId ? Number(jobId) : undefined,
+      status: status as string
     });
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching applications' });
   }
@@ -54,14 +24,7 @@ export const updateApplicationStatus = async (req: Request, res: Response): Prom
     const { id } = req.params;
     const { status } = req.body;
 
-    const application = await prisma.application.update({
-      where: { id: Number(id) },
-      data: { status },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        job: { select: { id: true, title: true, company: true } }
-      }
-    });
+    const application = await ApplicationService.updateApplicationStatus(Number(id), status);
 
     res.status(200).json(application);
   } catch (error) {
@@ -82,30 +45,18 @@ export const createApplication = async (req: AuthRequest, res: Response): Promis
       return res.status(400).json({ message: 'jobId is required' });
     }
 
-    // Check if job exists
-    const job = await prisma.job.findUnique({ where: { id: Number(jobId) } });
-    if (!job) {
-      return res.status(404).json({ message: 'Job not found' });
-    }
-
-    // Check if application already exists
-    const existingApplication = await prisma.application.findFirst({
-      where: { userId, jobId: Number(jobId) }
-    });
-
-    if (existingApplication) {
-      return res.status(400).json({ message: 'You have already applied for this job' });
-    }
-
-    const application = await prisma.application.create({
-      data: {
-        userId,
-        jobId: Number(jobId),
-        status: 'PENDING'
+    try {
+      const application = await ApplicationService.applyForJob(userId, Number(jobId));
+      res.status(201).json({ message: 'Application submitted successfully', application });
+    } catch (serviceError: any) {
+      if (serviceError.message === 'Job not found') {
+        return res.status(404).json({ message: serviceError.message });
       }
-    });
-
-    res.status(201).json({ message: 'Application submitted successfully', application });
+      if (serviceError.message === 'You have already applied for this job') {
+        return res.status(400).json({ message: serviceError.message });
+      }
+      throw serviceError;
+    }
   } catch (error) {
     res.status(500).json({ message: 'Error creating application' });
   }
