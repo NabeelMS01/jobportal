@@ -4,34 +4,115 @@ This repository contains the solution for the TNP India Round 2 Machine Test. It
 
 ## Tech Stack
 * **Frontend**: React.js, Tailwind CSS, Redux Toolkit, React Hook Form, Zod, Axios
-* **Backend**: Node.js, Express.js, Prisma ORM, PostgreSQL, JWT for Authentication
+* **Backend**: Node.js, Express.js, Prisma ORM, PostgreSQL, Redis, JWT for Authentication
 
 ## Folder Structure
 * `/client`: Frontend React application.
 * `/server`: Backend Node.js application.
 
-## Prerequisites
-* Node.js (v18+)
-* PostgreSQL running locally or remotely.
+---
 
-## Setup Instructions
+## 🚀 Setup Instructions - Fully Automated Docker Setup (Recommended)
 
-### 1. Database Setup
-1. Create a PostgreSQL database named `jobportal`.
+We have containerized the entire application. With a single command, Docker will spin up the database (PostgreSQL), cache (Redis), backend (Node.js API), and frontend (React/Vite).
 
-### 2. Backend Setup
-1. Navigate to the `server` directory: `cd server`
-2. Install dependencies: `npm install`
-3. Copy environment variables: `cp .env.example .env`
-4. Update `.env` with your actual `DATABASE_URL`.
-5. Run database migrations to create tables: `npx prisma migrate dev --name init`
-6. Seed the master data (creates admin user and mock jobs): `npm run prisma.seed`
-7. Start the backend development server: `npm run dev` (Runs on `http://localhost:5000`)
+### Prerequisites
+- **Docker & Docker Desktop**. Ensure Docker Desktop is installed, open, and running on your machine.
 
-### 3. Frontend Setup
-1. Navigate to the `client` directory: `cd client`
-2. Install dependencies: `npm install`
-3. Start the frontend development server: `npm run dev` (Runs on `http://localhost:5173`)
+### Getting Started
+
+1. **Start the application**:
+   From the root of the project, run the startup script:
+   ```bash
+   ./start.sh
+   ```
+   *This script uses `docker compose` to build the images, start the containers in the background, automatically apply database migrations, insert seed data, and open your browser.*
+
+2. **Login**:
+   The frontend will automatically open at `http://localhost:5173`. You can log in using the seed credentials:
+   - **Email:** `admin@tnp.com`
+   - **Password:** `admin123`
+
+### Managing the Application
+
+- **Stop the application**:
+  To gracefully stop all containers, run:
+  ```bash
+  ./stop.sh
+  ```
+
+- **View Logs**:
+  We have provided helper scripts to easily monitor your services:
+  - Watch Backend Server logs: `./logs-server.sh`
+  - Watch Frontend Client logs: `./logs-client.sh`
+  *(Press `Ctrl + C` in your terminal anytime to stop watching the logs).*
+
+---
+
+## 🛠️ Setup Instructions - Manual Setup (Without Docker)
+
+If you prefer to run the services manually directly on your host machine.
+
+### Prerequisites
+- **Node.js** (v20 or higher recommended)
+- **PostgreSQL** running locally
+- **Redis** running locally
+
+### Step 1: Database Setup  
+Create a PostgreSQL database named `jobportal`.
+```bash
+psql -U postgres -c "CREATE DATABASE jobportal;"
+```
+
+### Step 2: Backend Setup
+1. **Navigate to the server directory**:
+   ```bash
+   cd server
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Environment Variables**:
+   Copy the `.env.example` file to `.env` and configure your database and Redis URLs.
+   ```bash
+   cp .env.example .env
+   ```
+4. **Run Migrations and Seed Data**:
+   ```bash
+   npx prisma migrate dev
+   ```
+   *(This will also run the seed script to create the admin user and mock jobs)*
+5. **Start the Backend Server**:
+   ```bash
+   npm run dev
+   ```
+   *(Runs on `http://localhost:5000`)*
+
+### Step 3: Frontend Setup
+Open a **new terminal window**.
+1. **Navigate to the client directory**:
+   ```bash
+   cd client
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Environment Variables**:
+   ```bash
+   cp .env.example .env
+   ```
+4. **Start the Frontend Application**:
+   ```bash
+   npm run dev
+   ```
+   *(Runs on `http://localhost:5173`)*
+
+### Step 4: Login
+Open `http://localhost:5173` in your browser and use the `admin@tnp.com` / `admin123` credentials.
+
+---
 
 ## Admin Portal Features
 * **Authentication**: Login with `admin@tnp.com` and password `admin123`. Managed using JWT access tokens.

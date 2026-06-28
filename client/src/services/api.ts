@@ -14,7 +14,13 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Prevent infinite loops if the refresh or logout endpoints return 401
-      if (originalRequest.url === '/api/auth/refresh' || originalRequest.url === '/api/auth/logout') {
+      // Also prevent refreshing on login or register failure
+      if (
+        originalRequest.url === '/api/auth/refresh' || 
+        originalRequest.url === '/api/auth/logout' ||
+        originalRequest.url === '/api/auth/login' ||
+        originalRequest.url === '/api/auth/register'
+      ) {
         return Promise.reject(error);
       }
 

@@ -36,10 +36,10 @@ export default function AdminLayout() {
   }
 
   // Determine title based on location
-  const title = page === "jobs" ? "Job Listings" 
-    : page === "jobForm" ? (location.pathname.includes("edit") ? "Edit Job" : "Create Job") 
-    : page === "applications" ? "Applications" 
-    : "Users";
+  const title = page === "jobs" ? "Job Listings"
+    : page === "jobForm" ? (location.pathname.includes("edit") ? "Edit Job" : "Create Job")
+      : page === "applications" ? "Applications"
+        : "Users";
 
   const adminName = user?.name || "Admin User";
 
@@ -72,12 +72,7 @@ export default function AdminLayout() {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-sidebar-border">
-          <div className="rounded-xl p-4 bg-card border border-border">
-            <p className="text-xs font-semibold">Need help?</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Visit our docs to get started.</p>
-          </div>
-        </div>
+
       </aside>
 
       {/* Main Content */}
